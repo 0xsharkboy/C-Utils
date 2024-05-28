@@ -1,0 +1,64 @@
+name: Check Coding Style and Build
+
+on:
+    push:
+      branches:
+        - 'main'
+    pull_request:
+      branches:
+        - 'main'
+
+env:
+  LIBNAME: "cutils.a"
+
+jobs:
+  check_coding_style:
+    name: Check Coding Style
+    runs-on: ubuntu-latest
+    container: ghcr.io/epitech/coding-style-checker:latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Run coding style check
+        run: |
+          check.sh $(pwd) $(pwd)
+          STYLE="coding-style-reports.log"
+          if [ -s $STYLE ]; then
+              while read p; do
+                  IFS=':' read -ra ERR <<< "$p"
+                  TITLE=$(echo "${ERR[2]}" | sed 's/ //g')
+                  TITLE="$TITLE coding style error"
+                  FILENAME="${ERR[0]: 2}"
+                  LINE="${ERR[1]}"
+                  TYPE="${ERR[3]}"
+                  echo "::error title=$TITLE,file=$FILENAME,line=$LINE::$TYPE"
+              done < "$STYLE"
+              exit 1
+          fi
+
+  check_program_compilation:
+    name: Check Project Compilation
+    needs: check_coding_style
+    runs-on: ubuntu-latest
+    container:
+      image: epitechcontent/epitest-docker
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build project
+        run: make
+        timeout-minutes: 2
+
+      - name: Clean files
+        run: make clean
+
+      - name: Verify lib
+        run: |
+            if [ ! -f "$LIBNAME" ]; then
+              echo "::error title="Error: $file does not exist or is not executable"::"Compilation failed""
+              exit 1
+            fi

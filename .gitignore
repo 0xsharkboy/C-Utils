@@ -1,0 +1,5 @@
+.vscode/
+*.o
+cutils.a
+test.c
+a.out
