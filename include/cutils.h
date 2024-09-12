@@ -22,6 +22,8 @@ void my_putstr(char *str);
 char *my_strcat(char *str1, char *str2);
 char *my_strdup(char *str);
 int my_strlen(char *str);
+bool num_is_even(int num);
+bool num_is_odd(int num);
 char *open_file(const char *filepath);
 bool starts_with(char *str, char *start);
 char *to_lower(char *str);
